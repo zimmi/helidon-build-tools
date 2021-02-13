@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, 2020 Oracle and/or its affiliates.
+ * Copyright (c) 2019, 2021 Oracle and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,9 @@ import static io.helidon.build.test.HelidonTestVersions.helidonTestVersion;
 import static io.helidon.build.util.Constants.DIR_SEP;
 import static io.helidon.build.util.FileUtils.assertFile;
 import static io.helidon.build.util.FileUtils.ensureDirectory;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -51,6 +54,7 @@ public class TestFiles implements BeforeAllCallback {
     private static final Instance<Path> SE_JAR = new Instance<>(TestFiles::getOrCreateApplicationSeJar);
     private static final Instance<Path> MP_JAR = new Instance<>(TestFiles::getOrCreateApplicationMpJar);
     private static final Instance<Path> SIGNED_JAR = new Instance<>(TestFiles::fetchSignedJar);
+    private static final Instance<Path> MULTI_RELEASE_JAR = new Instance<>(TestFiles::fetchMultiReleaseJar);
     private static final AtomicInteger SE_COPY_NUMBER = new AtomicInteger(1);
     private static final AtomicInteger MP_COPY_NUMBER = new AtomicInteger(1);
 
@@ -147,6 +151,16 @@ public class TestFiles implements BeforeAllCallback {
     }
 
     /**
+     * Returns a multi-release jar.
+     * The jar contains a module descriptor at META-INF/versions/9/module-info.class.
+     *
+     * @return The jar.
+     */
+    public static Path multiReleaseJar() {
+        return MULTI_RELEASE_JAR.instance();
+    }
+
+    /**
      * Recursively delete a directory.
      *
      * @param dir Directory to delete.
@@ -189,6 +203,18 @@ public class TestFiles implements BeforeAllCallback {
 
     private static Path fetchSignedJar() {
         throw new IllegalStateException("not yet implemented, see https://github.com/oracle/helidon-build-tools/issues/110");
+    }
+
+    private static Path fetchMultiReleaseJar() {
+        Path jar = targetDir().resolve("multi-release.jar");
+        if (!Files.exists(jar)) {
+            try (InputStream in = TestFiles.class.getResourceAsStream("/multi-release.jar")) {
+                Files.copy(in, jar);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+        return assertFile(jar);
     }
 
     private static Path getOrCreateApplicationSeJar() {

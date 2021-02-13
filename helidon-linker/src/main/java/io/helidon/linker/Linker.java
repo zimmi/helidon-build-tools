@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, 2020 Oracle and/or its affiliates.
+ * Copyright (c) 2019, 2021 Oracle and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -143,7 +143,7 @@ public final class Linker {
     }
 
     private void buildApplication() {
-        this.application = Application.create(config.mainJar());
+        this.application = Application.create(config.jdk(), config.mainJar());
         this.exitOnStarted = application.exitOnStartedValue();
         final String version = application.helidonVersion();
         Log.info("Creating Java Runtime Image %s from %s and %s, built with Helidon %s",
@@ -155,7 +155,7 @@ public final class Linker {
 
     private void collectJavaDependencies() {
         Log.info("Collecting Java module dependencies");
-        this.javaDependencies = application.javaDependencies(config.jdk());
+        this.javaDependencies = application.javaDependencies();
         final List<String> sorted = new ArrayList<>(javaDependencies);
         sorted.sort(null);
         Log.info("Including %d Java dependencies: %s", sorted.size(), String.join(", ", sorted));
